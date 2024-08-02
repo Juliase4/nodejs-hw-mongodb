@@ -6,11 +6,11 @@ import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
 
 export async function getContacts(req, res, next) {
-  const { page, perPage } = parsePaginationParams(req.query);
-  const { sortBy, sortOrder } = parseSortParams(req.query);
-  const filter = parseFilterParams(req.query);
-
   try {
+    const { page, perPage } = parsePaginationParams(req.query);
+    const { sortBy, sortOrder } = parseSortParams(req.query);
+    const filter = parseFilterParams(req.query);
+
     const contactsData = await ContactsService.getAllContacts({
       page,
       perPage,
@@ -19,7 +19,7 @@ export async function getContacts(req, res, next) {
       filter,
     });
 
-    if (contactsData.contacts.length === 0) {
+    if (contactsData.data.length === 0) {
       return next(createError(404, 'Contacts not found'));
     }
     if (page > contactsData.totalPages) {
