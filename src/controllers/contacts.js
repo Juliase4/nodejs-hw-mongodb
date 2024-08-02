@@ -9,11 +9,49 @@ import createError from 'http-errors';
 
 export async function getContacts(req, res, next) {
   try {
-    const contacts = await getAllContacts();
+    const {
+      page = 1,
+      perPage = 10,
+      sortBy = 'name',
+      sortOrder = 'asc',
+      type,
+      isFavourite,
+    } = req.query;
+    const pageNumber = parseInt(page, 10);
+    const perPageNumber = parseInt(perPage, 10);
+
+    const filter = {};
+    if (type) {
+      filter.contactType = type;
+    }
+    if (isFavourite !== undefined) {
+      filter.isFavourite = isFavourite === 'true';
+    }
+
+    const totalItems = await getAllContacts(filter).countDocuments();
+    const totalPages = Math.ceil(totalItems / perPageNumber);
+    const hasPreviousPage = pageNumber > 1;
+    const hasNextPage = pageNumber < totalPages;
+
+    const sortOptions = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+
+    const contacts = await getAllContacts(filter)
+      .sort(sortOptions)
+      .skip((pageNumber - 1) * perPageNumber)
+      .limit(perPageNumber);
+
     res.status(200).json({
       status: 200,
       message: 'Successfully found contacts!',
-      data: contacts,
+      data: {
+        data: contacts,
+        page: pageNumber,
+        perPage: perPageNumber,
+        totalItems,
+        totalPages,
+        hasPreviousPage,
+        hasNextPage,
+      },
     });
   } catch (error) {
     next(error);
