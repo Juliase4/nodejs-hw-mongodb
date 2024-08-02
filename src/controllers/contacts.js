@@ -11,7 +11,7 @@ export async function getContacts(req, res, next) {
     const { sortBy, sortOrder } = parseSortParams(req.query);
     const filter = parseFilterParams(req.query);
 
-    const contactsData = await ContactsService.getAllContacts({
+    const contacts = await ContactsService.getAllContacts({
       page,
       perPage,
       sortBy,
@@ -19,17 +19,17 @@ export async function getContacts(req, res, next) {
       filter,
     });
 
-    if (contactsData.data.length === 0) {
+    if (contacts.data.length === 0) {
       return next(createError(404, 'Contacts not found'));
     }
-    if (page > contactsData.totalPages) {
+    if (page > contacts.totalPages) {
       return next(createError(404, 'Page not found'));
     }
 
     res.status(200).send({
       status: 200,
       message: 'Successfully found contacts!',
-      data: contactsData,
+      data: contacts,
     });
   } catch (error) {
     next(error);
