@@ -1,57 +1,37 @@
 import {
-  getAllContacts,
-  getContactById,
-  createNewContact,
-  deleteContactById,
-  patchContactById,
-} from '../services/contacts.js';
+  parsePaginationParams,
+  parseFilterParams,
+  parseSortParams,
+} from '../utils/parseParams.js';
+
 import createError from 'http-errors';
+import * as ContactsService from '../services/contacts.js';
 
 export async function getContacts(req, res, next) {
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+  const filter = parseFilterParams(req.query);
+
   try {
-    const {
-      page = 1,
-      perPage = 10,
-      sortBy = 'name',
-      sortOrder = 'asc',
-      type,
-      isFavourite,
-    } = req.query;
-    const pageNumber = parseInt(page, 10);
-    const perPageNumber = parseInt(perPage, 10);
+    const contactsData = await ContactsService.getAllContacts({
+      page,
+      perPage,
+      sortBy,
+      sortOrder,
+      filter,
+    });
 
-    const filter = {};
-    if (type) {
-      filter.contactType = type;
+    if (contactsData.contacts.length === 0) {
+      return next(createError(404, 'Contacts not found'));
     }
-    if (isFavourite !== undefined) {
-      filter.isFavourite = isFavourite === 'true';
+    if (page > contactsData.totalPages) {
+      return next(createError(404, 'Page not found'));
     }
 
-    const totalItems = await getAllContacts(filter).countDocuments();
-    const totalPages = Math.ceil(totalItems / perPageNumber);
-    const hasPreviousPage = pageNumber > 1;
-    const hasNextPage = pageNumber < totalPages;
-
-    const sortOptions = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
-
-    const contacts = await getAllContacts(filter)
-      .sort(sortOptions)
-      .skip((pageNumber - 1) * perPageNumber)
-      .limit(perPageNumber);
-
-    res.status(200).json({
+    res.status(200).send({
       status: 200,
       message: 'Successfully found contacts!',
-      data: {
-        data: contacts,
-        page: pageNumber,
-        perPage: perPageNumber,
-        totalItems,
-        totalPages,
-        hasPreviousPage,
-        hasNextPage,
-      },
+      data: contactsData,
     });
   } catch (error) {
     next(error);
@@ -61,7 +41,7 @@ export async function getContacts(req, res, next) {
 export async function getContact(req, res, next) {
   try {
     const { contactId } = req.params;
-    const contact = await getContactById(contactId);
+    const contact = await ContactsService.getContactById(contactId);
 
     if (!contact) {
       throw createError(404, 'Contact not found');
@@ -85,7 +65,7 @@ export async function createContact(req, res, next) {
       throw createError(400, 'Name, phoneNumber, and contactType are required');
     }
 
-    const newContact = await createNewContact({
+    const newContact = await ContactsService.createNewContact({
       name,
       phoneNumber,
       email,
@@ -105,7 +85,7 @@ export async function createContact(req, res, next) {
 export async function deleteContact(req, res, next) {
   try {
     const { contactId } = req.params;
-    const deletedContact = await deleteContactById(contactId);
+    const deletedContact = await ContactsService.deleteContactById(contactId);
 
     if (!deletedContact) {
       throw createError(404, 'Contact not found');
@@ -120,7 +100,10 @@ export async function deleteContact(req, res, next) {
 export async function patchContact(req, res, next) {
   try {
     const { contactId } = req.params;
-    const patchedContact = await patchContactById(contactId, req.body);
+    const patchedContact = await ContactsService.patchContactById(
+      contactId,
+      req.body,
+    );
 
     if (!patchedContact) {
       throw createError(404, 'Contact not found');
