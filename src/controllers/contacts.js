@@ -1,11 +1,9 @@
-import {
-  parsePaginationParams,
-  parseFilterParams,
-  parseSortParams,
-} from '../utils/parseParams.js';
-
 import createError from 'http-errors';
 import * as ContactsService from '../services/contacts.js';
+
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
+import { parseFilterParams } from '../utils/parseFilterParams.js';
 
 export async function getContacts(req, res, next) {
   const { page, perPage } = parsePaginationParams(req.query);
