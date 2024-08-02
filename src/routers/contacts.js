@@ -8,10 +8,7 @@ import {
 } from '../controllers/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { validateBody } from '../middlewares/validateBody.js';
-import {
-  contactSchema,
-  contactUpdateSchema,
-} from '../validation/contactSchemas.js';
+import { contactSchema, contactUpdateSchema } from '../validation/contacts.js';
 import { isValidId } from '../middlewares/isValidId.js';
 
 const router = express.Router();
