@@ -1,5 +1,6 @@
 import createError from 'http-errors';
 import * as ContactsService from '../services/contacts.js';
+import mongoose from 'mongoose';
 
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
@@ -39,15 +40,20 @@ export async function getContacts(req, res, next) {
 export async function getContact(req, res, next) {
   try {
     const { contactId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+      return next(createError(400, 'Invalid ID format'));
+    }
+
     const contact = await ContactsService.getContactById(contactId);
 
     if (!contact) {
-      throw createError(404, 'Contact not found');
+      return next(createError(404, 'Contact not found'));
     }
 
     res.status(200).json({
       status: 200,
-      message: 'Successfully found contact with id ${contactId}!',
+      message: `Successfully found contact with id ${contactId}!`,
       data: contact,
     });
   } catch (error) {
