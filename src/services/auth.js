@@ -45,3 +45,40 @@ export async function loginUser(payload) {
     refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
   });
 }
+
+function createSession() {
+  const accessToken = randomBytes(30).toString('base64');
+  const refreshToken = randomBytes(30).toString('base64');
+
+  return {
+    accessToken,
+    refreshToken,
+    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
+    refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
+  };
+}
+
+export async function refreshSession({ sessionId, refreshToken }) {
+  const session = await Session.findOne({
+    _id: sessionId,
+    refreshToken,
+  });
+  console.log(session);
+  if (!session) {
+    throw createError(401, 'Session not found');
+  }
+
+  const isSessionTokenExpired =
+    new Date() > new Date(session.refreshTokenValidUntil);
+  if (isSessionTokenExpired) {
+    throw createError(401, 'Session token expired');
+  }
+
+  const newSession = createSession();
+  await Session.deleteOne({ _id: sessionId, refreshToken });
+  console.log(newSession);
+  return await Session.create({
+    userId: session.userId,
+    ...newSession,
+  });
+}
