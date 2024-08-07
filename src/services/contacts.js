@@ -7,6 +7,7 @@ export async function getAllContacts({
   sortBy,
   sortOrder,
   filter,
+  userId,
 }) {
   const limit = perPage;
   const skip = page > 0 ? (page - 1) * perPage : 0;
@@ -19,6 +20,8 @@ export async function getAllContacts({
   if (filter.contactType) {
     contactsQuery.where('contactType').equals(filter.contactType);
   }
+
+  contactsQuery.where('userId').equals(userId);
 
   const [contactsCount, contacts] = await Promise.all([
     ContactsCollection.find().merge(contactsQuery).countDocuments(),
@@ -37,20 +40,22 @@ export async function getAllContacts({
   };
 }
 
-export async function getContactById(contactId) {
-  return ContactsCollection.findById(contactId);
+export async function getContactById(contactId, userId) {
+  return ContactsCollection.findById({ _id: contactId, userId });
 }
 
 export async function createNewContact(contactData) {
   return ContactsCollection.create(contactData);
 }
 
-export async function deleteContactById(contactId) {
-  return ContactsCollection.findByIdAndDelete(contactId);
+export async function deleteContactById(contactId, userId) {
+  return ContactsCollection.findByIdAndDelete({ _id: contactId, userId });
 }
 
-export async function patchContactById(contactId, contactData) {
-  return ContactsCollection.findByIdAndUpdate(contactId, contactData, {
-    new: true,
-  });
+export async function patchContactById(contactId, contactData, userId) {
+  return ContactsCollection.findByIdAndUpdate(
+    { _id: contactId, userId },
+    contactData,
+    { new: true },
+  );
 }
