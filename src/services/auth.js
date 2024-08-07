@@ -46,6 +46,10 @@ export async function loginUser(payload) {
   });
 }
 
+export async function logoutUser(sessionId) {
+  await Session.deleteOne({ _id: sessionId });
+}
+
 function createSession() {
   const accessToken = randomBytes(30).toString('base64');
   const refreshToken = randomBytes(30).toString('base64');

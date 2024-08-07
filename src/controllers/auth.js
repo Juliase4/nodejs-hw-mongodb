@@ -1,4 +1,9 @@
-import { registerUser, loginUser, refreshSession } from '../services/auth.js';
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshSession,
+} from '../services/auth.js';
 import { THIRTY_DAYS } from '../constants/constants.js';
 
 export async function registerUserController(req, res) {
@@ -47,6 +52,16 @@ function setupSession(res, session) {
     httpOnly: true,
     expires: new Date(Date.now() + THIRTY_DAYS),
   });
+}
+
+export async function logoutUserController(req, res, next) {
+  if (req.cookies.sessionId) {
+    await logoutUser(req.cookies.sessionId);
+  }
+  res.clearCookie('sessionId');
+  res.clearCookie('refreshToken');
+
+  res.status(204).send();
 }
 
 export async function refreshTokenController(req, res, next) {
