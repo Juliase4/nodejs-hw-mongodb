@@ -11,6 +11,7 @@ export async function getContacts(req, res, next) {
     const { page, perPage } = parsePaginationParams(req.query);
     const { sortBy, sortOrder } = parseSortParams(req.query);
     const filter = parseFilterParams(req.query);
+    const userId = req.user._id;
 
     const contacts = await ContactsService.getAllContacts({
       page,
@@ -18,6 +19,7 @@ export async function getContacts(req, res, next) {
       sortBy,
       sortOrder,
       filter,
+      userId,
     });
 
     if (contacts.data.length === 0) {
@@ -40,12 +42,13 @@ export async function getContacts(req, res, next) {
 export async function getContact(req, res, next) {
   try {
     const { contactId } = req.params;
+    const userId = req.user._id;
 
     if (!mongoose.Types.ObjectId.isValid(contactId)) {
       return next(createError(400, 'Invalid ID format'));
     }
 
-    const contact = await ContactsService.getContactById(contactId);
+    const contact = await ContactsService.getContactById(contactId, userId);
 
     if (!contact) {
       return next(createError(404, 'Contact not found'));
@@ -64,6 +67,7 @@ export async function getContact(req, res, next) {
 export async function createContact(req, res, next) {
   try {
     const { name, phoneNumber, email, isFavourite, contactType } = req.body;
+    const userId = req.user._id;
 
     if (!name || !phoneNumber || !contactType) {
       throw createError(400, 'Name, phoneNumber, and contactType are required');
@@ -75,7 +79,9 @@ export async function createContact(req, res, next) {
       email,
       isFavourite,
       contactType,
+      userId,
     });
+
     res.status(201).json({
       status: 201,
       message: 'Successfully created a contact!',
@@ -89,7 +95,12 @@ export async function createContact(req, res, next) {
 export async function deleteContact(req, res, next) {
   try {
     const { contactId } = req.params;
-    const deletedContact = await ContactsService.deleteContactById(contactId);
+    const userId = req.user._id;
+
+    const deletedContact = await ContactsService.deleteContactById(
+      contactId,
+      userId,
+    );
 
     if (!deletedContact) {
       throw createError(404, 'Contact not found');
@@ -104,9 +115,12 @@ export async function deleteContact(req, res, next) {
 export async function patchContact(req, res, next) {
   try {
     const { contactId } = req.params;
+    const userId = req.user._id;
+
     const patchedContact = await ContactsService.patchContactById(
       contactId,
       req.body,
+      userId,
     );
 
     if (!patchedContact) {
