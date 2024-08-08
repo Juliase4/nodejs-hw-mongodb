@@ -41,7 +41,7 @@ export async function getAllContacts({
 }
 
 export async function getContactById(contactId, userId) {
-  return ContactsCollection.findById({ _id: contactId, userId });
+  return ContactsCollection.findOne({ _id: contactId, userId });
 }
 
 export async function createNewContact(contactData) {
@@ -49,11 +49,11 @@ export async function createNewContact(contactData) {
 }
 
 export async function deleteContactById(contactId, userId) {
-  return ContactsCollection.findByIdAndDelete({ _id: contactId, userId });
+  return ContactsCollection.findOneAndDelete({ _id: contactId, userId });
 }
 
 export async function patchContactById(contactId, contactData, userId) {
-  return ContactsCollection.findByIdAndUpdate(
+  return ContactsCollection.findOneAndUpdate(
     { _id: contactId, userId },
     contactData,
     { new: true },
