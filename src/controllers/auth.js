@@ -1,8 +1,12 @@
+import createError from 'http-errors';
+
 import {
   registerUser,
   loginUser,
   logoutUser,
   refreshSession,
+  requestResetToken,
+  resetPassword,
 } from '../services/auth.js';
 import { THIRTY_DAYS } from '../constants/constants.js';
 
@@ -22,7 +26,7 @@ export async function registerUserController(req, res) {
   });
 }
 
-export async function loginUserController(req, res, next) {
+export async function loginUserController(req, res) {
   const session = await loginUser(req.body);
 
   res.cookie('refreshToken', session.refreshToken, {
@@ -54,7 +58,7 @@ function setupSession(res, session) {
   });
 }
 
-export async function logoutUserController(req, res, next) {
+export async function logoutUserController(req, res) {
   if (req.cookies.sessionId) {
     await logoutUser(req.cookies.sessionId);
   }
@@ -64,7 +68,7 @@ export async function logoutUserController(req, res, next) {
   res.status(204).send();
 }
 
-export async function refreshTokenController(req, res, next) {
+export async function refreshTokenController(req, res) {
   const session = await refreshSession({
     sessionId: req.cookies.sessionId,
     refreshToken: req.cookies.refreshToken,
@@ -74,5 +78,29 @@ export async function refreshTokenController(req, res, next) {
     status: 200,
     message: 'Successfully refreshed a session!',
     data: { accessToken: session.accessToken },
+  });
+}
+
+export async function requestResetEmailController(req, res, next) {
+  await requestResetToken(req.body.email);
+  if (requestResetToken) {
+    res.send({
+      status: 200,
+      message: 'Reset password email has been successfully sent',
+      data: {},
+    });
+  } else {
+    next(createError(500, 'Failed to send the email, please try again later.'));
+  }
+}
+
+export async function sendPassword(req, res) {
+  const { password, token } = req.body;
+
+  await resetPassword(password, token);
+  res.send({
+    status: 200,
+    message: 'Password has been successfully reset.',
+    data: {},
   });
 }
