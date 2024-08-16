@@ -52,10 +52,12 @@ export async function deleteContactById(contactId, userId) {
   return ContactsCollection.findOneAndDelete({ _id: contactId, userId });
 }
 
-export async function patchContactById(contactId, contactData, userId) {
+export function updateOldContact(contactsId, contact, userId) {
   return ContactsCollection.findOneAndUpdate(
-    { _id: contactId, userId },
-    contactData,
-    { new: true },
+    { _id: contactsId, userId },
+    contact,
+    {
+      new: true,
+    },
   );
 }
