@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { saveFileToUploadDir } from '../utils/saveFaleToUploadDir.js';
 
 export async function getContacts(req, res, next) {
   try {
@@ -112,27 +114,39 @@ export async function deleteContact(req, res, next) {
   }
 }
 
-export async function patchContact(req, res, next) {
-  try {
-    const { contactId } = req.params;
-    const userId = req.user._id;
+export async function updateContact(req, res, next) {
+  const { contactsId } = req.params;
+  const contact = {
+    name: req.body.name,
+    phoneNumber: req.body.phoneNumber,
+    email: req.body.email,
+    isFavourite: req.body.isFavourite,
+    contactType: req.body.contactType,
+  };
+  const photo = req.file;
+  let photoUrl;
 
-    const patchedContact = await ContactsService.patchContactById(
-      contactId,
-      req.body,
-      userId,
-    );
+  const checkIfCloudinary = process.env.ENABLE_CLOUDINARY;
 
-    if (!patchedContact) {
-      throw createError(404, 'Contact not found');
+  if (photo) {
+    if (checkIfCloudinary === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
     }
-
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully patched a contact!',
-      data: patchedContact,
-    });
-  } catch (error) {
-    next(error);
   }
+  const updated = await ContactsService.updateOldContact(
+    contactsId,
+    { ...contact, photo: photoUrl },
+    req.user._id,
+  );
+  console.log(updated);
+  if (updated === null) {
+    return next(createError(404, 'Contact not found!'));
+  }
+  res.status(200).send({
+    status: 200,
+    message: 'Successfully patched a contact!',
+    data: updated,
+  });
 }

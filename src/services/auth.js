@@ -110,9 +110,10 @@ export async function requestResetToken(email) {
     },
     process.env.JWT_SECRET,
     {
-      expiresIn: '5m',
+      expiresIn: '15m',
     },
   );
+  console.log({ jwtToken });
 
   const templateFile = path.join(TEMPLATE_DIR, 'reset-password-email.html');
 
