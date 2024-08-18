@@ -1,20 +1,21 @@
 import { ContactsCollection } from '../db/models/contact.js';
 import { calculatePaginationData } from '../utils/calculatePaginationData.js';
+import { SORT_ORDER } from '../constants/constants.js';
 
-export async function getAllContacts({
-  page,
-  perPage,
-  sortBy,
-  sortOrder,
-  filter,
+export const getAllContacts = async ({
+  page = 1,
+  perPage = 10,
+  sortOrder = SORT_ORDER.ASC,
+  sortBy = '_id',
+  filter = {},
   userId,
-}) {
+}) => {
   const limit = perPage;
-  const skip = page > 0 ? (page - 1) * perPage : 0;
+  const skip = (page - 1) * perPage;
 
   const contactsQuery = ContactsCollection.find();
 
-  if (filter.isFavourite !== undefined) {
+  if (filter.isFavourite) {
     contactsQuery.where('isFavourite').equals(filter.isFavourite);
   }
   if (filter.contactType) {
@@ -26,9 +27,9 @@ export async function getAllContacts({
   const [contactsCount, contacts] = await Promise.all([
     ContactsCollection.find().merge(contactsQuery).countDocuments(),
     contactsQuery
+      .sort({ [sortBy]: sortOrder })
       .skip(skip)
       .limit(limit)
-      .sort({ [sortBy]: sortOrder })
       .exec(),
   ]);
 
@@ -38,26 +39,37 @@ export async function getAllContacts({
     data: contacts,
     ...paginationData,
   };
-}
+};
 
-export async function getContactById(contactId, userId) {
+export const getContactById = (contactId, userId) => {
   return ContactsCollection.findOne({ _id: contactId, userId });
-}
+};
 
-export async function createNewContact(contactData) {
-  return ContactsCollection.create(contactData);
-}
+export const createContact = (contact) => {
+  return ContactsCollection.create(contact);
+};
 
-export async function deleteContactById(contactId, userId) {
+export const deleteContact = (contactId, userId) => {
   return ContactsCollection.findOneAndDelete({ _id: contactId, userId });
-}
+};
 
-export function updateOldContact(contactsId, contact, userId) {
+export const updateContact = (contactId, contact, userId) => {
   return ContactsCollection.findOneAndUpdate(
-    { _id: contactsId, userId },
+    { _id: contactId, userId },
+    contact,
+    {
+      new: true,
+      upsert: true,
+    },
+  );
+};
+
+export const patchContact = (contactId, contact, userId) => {
+  return ContactsCollection.findOneAndUpdate(
+    { _id: contactId, userId },
     contact,
     {
       new: true,
     },
   );
-}
+};
