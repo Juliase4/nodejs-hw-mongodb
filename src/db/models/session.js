@@ -1,10 +1,10 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-const sessionSchema = new mongoose.Schema(
+const sessionsSchema = new mongoose.Schema(
   {
     userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'users',
+      type: mongoose.Schema.Types.ObjectId,
+      unique: true,
       required: true,
     },
     accessToken: {
@@ -24,7 +24,9 @@ const sessionSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true, versionKey: false },
+  {
+    versionKey: false,
+  },
 );
 
-export const Session = mongoose.model('sessions', sessionSchema);
+export const SessionsCollection = mongoose.model('sessions', sessionsSchema);

@@ -1,6 +1,6 @@
 import createError from 'http-errors';
 
-export default function validateBody(schema) {
+export function validateBody(schema) {
   return async (req, res, next) => {
     try {
       await schema.validateAsync(req.body, { abortEarly: false });

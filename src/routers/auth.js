@@ -1,53 +1,54 @@
 import express from 'express';
-
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import {
   registerUserController,
   loginUserController,
-  refreshTokenController,
   logoutUserController,
+  refreshUserSessionController,
   requestResetEmailController,
-  sendPassword,
+  resetPasswordController,
 } from '../controllers/auth.js';
-import validateBody from '../middlewares/validateBody.js';
+import { validateBody } from '../middlewares/validateBody.js';
 import {
-  registerValidationSchema,
-  loginValidationSchema,
+  registerUserSchema,
+  loginUserSchema,
   requestResetEmailSchema,
   resetPasswordSchema,
 } from '../validation/auth.js';
 
 const router = express.Router();
-const parseJSON = express.json();
+const jsonParser = express.json();
 
 router.post(
   '/register',
-  parseJSON,
-  validateBody(registerValidationSchema),
+  jsonParser,
+  validateBody(registerUserSchema),
   ctrlWrapper(registerUserController),
 );
 
 router.post(
   '/login',
-  parseJSON,
-  validateBody(loginValidationSchema),
+  jsonParser,
+  validateBody(loginUserSchema),
   ctrlWrapper(loginUserController),
 );
-router.post('/refresh', parseJSON, ctrlWrapper(refreshTokenController));
-router.post('/logout', parseJSON, ctrlWrapper(logoutUserController));
+
+router.post('/logout', ctrlWrapper(logoutUserController));
+
+router.post('/refresh', ctrlWrapper(refreshUserSessionController));
 
 router.post(
   '/send-reset-email',
-  parseJSON,
+  jsonParser,
   validateBody(requestResetEmailSchema),
   ctrlWrapper(requestResetEmailController),
 );
 
 router.post(
   '/reset-pwd',
-  parseJSON,
+  jsonParser,
   validateBody(resetPasswordSchema),
-  ctrlWrapper(sendPassword),
+  ctrlWrapper(resetPasswordController),
 );
 
 export default router;
