@@ -28,12 +28,12 @@ export const startServer = () => {
   app.use(cookieParser());
 
   app.use(router);
+  app.use('/api-docs', swaggerDocs());
 
   app.use(notFoundHandler);
   app.use(errorHandler);
 
   app.use(express.static(path.resolve('src', 'uploads')));
-  app.use('/api-docs', swaggerDocs());
 
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
