@@ -53,7 +53,7 @@ schemas:
     properties:
       token:
         type: string
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        example: LyPpSjt0XGbiSiMa0+tZzl2LtaSSzRD5nuuDJ...
       password:
         type: string
         format: password
@@ -78,7 +78,7 @@ schemas:
     properties:
       accessToken:
         type: string
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        example: LyPpSjt0XGbiSiMa0+tZzl2LtaSSzRD5nuuDJ...
 
   SuccessResponse:
     type: object

@@ -8,6 +8,7 @@ info:
   description: This is a documentation of contacts app
 tags:
   - name: Contacts
+    description: Operations about contacts.
   - name: Auth
     description: Auth operations.
 servers:
@@ -554,7 +555,7 @@ components:
       properties:
         accessToken:
           type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          example: LyPpSjt0XGbiSiMa0+tZzl2LtaSSzRD5nuuDJ...
     SendResetEmailRequest:
       type: object
       required:
@@ -581,7 +582,7 @@ components:
       properties:
         token:
           type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          example: LyPpSjt0XGbiSiMa0+tZzl2LtaSSzRD5nuuDJ...
         password:
           type: string
           format: password
